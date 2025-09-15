@@ -32,9 +32,23 @@ P_{\max}(n) = \max \{ x_k : x_k \ \text{is prime in the trajectory of } n \}.
 - Primality testing with a simple deterministic check.
 - Computes \( P_{\max}(n) \), the largest prime on each path.
 - Example trajectories exported as plain text.
+python src/collatz_prime_path.py --list 15 25 35 45 48 55 85 90 --csv results.csv
+This produces a CSV table with the maximal prime function P_max(n) for each input:
+| n  | P\_max |
+| -- | ------ |
+| 15 | 53     |
+| 25 | 29     |
+| 35 | 53     |
+| 45 | 17     |
+| 48 | 5      |
+| 55 | 1619   |
+| 85 | 2      |
+| 90 | 17     |
 
----
-
+Remarks:
+48, 85 reach the anchor primes {2,5}.
+90 behaves like 45, with P_max=17.
+This set was chosen to cover all three residue classes mod 6 (“three-bucket” test).
 ## Quick Start
 
 ```bash
