@@ -1,5 +1,6 @@
 # src/collatz_prime_path.py
 import argparse
+import csv
 
 def is_prime(x: int) -> bool:
     """Simple primality test"""
@@ -25,13 +26,13 @@ def collatz_pmax(n: int) -> int:
             n //= 2
         else:
             n = 3 * n + 1
-    return max(pmax, 2)  # every path eventually meets 2 or 5
+    return max(pmax, 2)
 
 
 def collatz_pmax_compressed(n: int) -> int:
     """Compute P_max(n) under the compressed Collatz operator (odd-core)"""
     # remove initial powers of 2
-    while n % 2 == 0:
+    while n % 2 == 0 and n > 1:
         n //= 2
 
     pmax = 0
@@ -40,24 +41,41 @@ def collatz_pmax_compressed(n: int) -> int:
             pmax = n
         m = 3 * n + 1
         # compute r = v2(m)
-        r = 0
         while m % 2 == 0:
             m //= 2
-            r += 1
         n = m
     return max(pmax, 2)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Collatz Prime Generator")
-    parser.add_argument("--n", type=int, required=True, help="starting integer n")
+    parser.add_argument("--n", type=int, help="single starting integer n")
+    parser.add_argument("--list", nargs="+", type=int, help="list of starting values")
     parser.add_argument("--compressed", action="store_true",
                         help="use the compressed Collatz operator (odd-core)")
+    parser.add_argument("--csv", type=str, help="output CSV filename")
+
     args = parser.parse_args()
 
-    if args.compressed:
-        result = collatz_pmax_compressed(args.n)
-        print(f"[Compressed] P_max({args.n}) = {result}")
+    # choose function
+    f = collatz_pmax_compressed if args.compressed else collatz_pmax
+
+    rows = []
+    if args.n is not None:
+        rows.append((args.n, f(args.n)))
+    if args.list is not None:
+        for n in args.list:
+            rows.append((n, f(n)))
+
+    if args.csv:
+        with open(args.csv, "w", newline="", encoding="utf-8") as fcsv:
+            writer = csv.writer(fcsv)
+            writer.writerow(["n", "P_max"])
+            writer.writerows(rows)
+        print(f"Results written to {args.csv}")
     else:
-        result = collatz_pmax(args.n)
-        print(f"[Classical] P_max({args.n}) = {result}")
+        for n, pmax in rows:
+            mode = "Compressed" if args.compressed else "Classical"
+            print(f"[{mode}] n={n}, P_max={pmax}")
+
+
